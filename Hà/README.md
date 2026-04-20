@@ -64,3 +64,11 @@ Dựa trên bảng số liệu thực nghiệm, hệ thống cho thấy hiệu n
 * **Recall@100 (~92.7%)**: Hệ thống có khả năng bao phủ cực tốt. Điều này chứng tỏ phần lớn các tài liệu có liên quan trong cơ sở dữ liệu đều được tìm thấy và đưa vào danh sách kết quả trả về.
 * **NDCG@10 (0.683)**: Hiệu quả xếp hạng đạt mức khá cao. Các tài liệu liên quan nhất có xu hướng xuất hiện ở những vị trí đầu tiên, giúp tối ưu hóa trải nghiệm tìm kiếm của người dùng.
 * **Độ chính xác (Precision)**: Các chỉ số cho thấy sự cân bằng ổn định giữa việc tìm kiếm rộng và việc đảm bảo tính liên quan của các kết quả hàng đầu.
+
+### 📝 Quy trình xử lý (Workflow)
+
+1. **Data Loading**: Đọc dữ liệu từ file JSONL và thực hiện Boosting Title.
+2. **Preprocessing**: Tokenization → Lowercase → Stopwords Removal → Porter Stemming.
+3. **Indexing**: Xây dựng bộ chỉ mục dựa trên thuật toán BM25+.
+4. **Retrieval**: Tiền xử lý truy vấn và tính điểm số tương quan với toàn bộ corpus.
+5. **Evaluation**: So sánh kết quả với file test.tsv bằng thư viện BEIR.
