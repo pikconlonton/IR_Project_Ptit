@@ -22,6 +22,7 @@ Dự án triển khai hệ thống truy xuất thông tin (Information Retrieval
         ├── queries.jsonl   # Chứa 300 câu truy vấn test
         └── qrels/
             └── test.tsv    # File nhãn đúng (ground truth)
+```
 
 ## 🛠 Yêu cầu cài đặt
 
@@ -29,6 +30,7 @@ Trước khi chạy, hãy đảm bảo bạn đã cài đặt các thư viện c
 
 ```bash
 pip install pandas nltk rank-bm25 beir
+```
 
 ## 🚀 Hướng dẫn sử dụng
 
