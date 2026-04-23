@@ -46,6 +46,23 @@ pip install pandas nltk rank-bm25 beir
 3. **Quá trình thực hiện**:
     Hệ thống sẽ tự động thực hiện quy trình: Tải dữ liệu -> Tiền xử lý & Indexing -> Truy vấn -> Đánh giá chỉ số.
 
+## Giao diện tương tác (UI)
+
+Có một ứng dụng Streamlit nhẹ tại `Hà/ui.py` dùng lại `ScienceIRSystem` trong `code.py` để:
+- Load data local
+- Build index
+- Search single query
+- Chạy evaluation (in ra console)
+
+Chạy UI:
+
+```
+python -m pip install -r Hà/requirements.txt
+streamlit run Hà/ui.py
+```
+
+Sau khi chạy, mở URL do Streamlit in ra (thường http://localhost:8501).
+
 ## 📊 Kết quả thực nghiệm
 
 Hệ thống đã được đánh giá chi tiết dựa trên tập dữ liệu SciFact với **300 truy vấn mẫu**. Kết quả thu được từ quá trình đánh giá như sau:

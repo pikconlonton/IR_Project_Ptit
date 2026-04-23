@@ -141,6 +141,19 @@ Metrics tương ứng:
 
 ### Output
 
+## Giao diện tương tác (UI)
+
+Có thể thử truy vấn tương tác và tinh chỉnh tham số (BM25 top-k, bật/tắt MMR, lambda, ...).
+
+Chạy UI (fish):
+
+```fish
+python -m pip install -r An/requirements.txt
+streamlit run An/ui.py
+```
+
+Trong UI có thể upload `corpus.jsonl` hoặc nhập đường dẫn tới folder `scifact/` local. UI cũng cho phép cấu hình `bm25_topk`, bật/tắt MMR và xem snippet kết quả.
+
 Chương trình in ra JSON metrics cơ bản (tính theo qrels của split):
 
 - `P@K`: Precision@K

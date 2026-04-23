@@ -158,3 +158,16 @@ scifact/
 Chạy chương trình:
 
 python ir_project.py
+
+## Giao diện tương tác (UI)
+
+Có thể thử nghiệm BM25+PRF tương tác và chạy đánh giá batch từ giao diện.
+
+Chạy UI:
+
+```
+python -m pip install -r Chung/requirements.txt
+streamlit run Chung/ui.py
+```
+
+UI cho phép upload hoặc trỏ tới folder data (`scifact/scifact`) chứa `corpus.jsonl`, `queries.jsonl`, và `qrels/test.tsv`.
