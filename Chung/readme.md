@@ -154,10 +154,13 @@ scifact/
  ├── queries.jsonl
  └── qrels/
       └── test.tsv
+```
 
 Chạy chương trình:
 
+```
 python ir_project.py
+```
 
 ## Giao diện tương tác (UI)
 
