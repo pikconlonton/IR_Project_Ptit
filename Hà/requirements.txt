@@ -1,0 +1,5 @@
+pandas
+nltk
+rank-bm25
+beir
+streamlit
