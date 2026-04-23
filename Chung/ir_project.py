@@ -9,7 +9,8 @@ import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-nltk.download('stopwords', quiet=True)
+
+nltk.download("stopwords", quiet=True)
 
 # đường dẫn dữ liệu
 CORPUS_PATH = "scifact/scifact/corpus.jsonl"
@@ -20,26 +21,29 @@ QRELS_PATH = "scifact/scifact/qrels/test.tsv"
 K_LIST = [1, 5, 10, 100]
 
 # stopwords + stemmer
-stop_words = set(stopwords.words('english'))
+stop_words = set(stopwords.words("english"))
 stemmer = PorterStemmer()
+
 
 # tokenize: lowercase + remove ký tự + remove stopword + stemming
 def tokenize(text):
     text = re.sub(r"[^\w\s]", " ", text.lower())
     return [stemmer.stem(w) for w in text.split() if w not in stop_words]
 
+
 # load file jsonl
 def load_jsonl(path):
     data = {}
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8") as f:
         for line in f:
             obj = json.loads(line)
             data[str(obj["_id"]).strip()] = obj
     return data
 
+
 # load qrels (ground truth)
 def load_qrels(path):
-    df = pd.read_csv(path, sep='\t')
+    df = pd.read_csv(path, sep="\t")
     qrels = {}
     for _, row in df.iterrows():
         qid = str(row["query-id"]).strip()
@@ -49,11 +53,13 @@ def load_qrels(path):
         qrels[qid].append(docid)
     return qrels
 
+
 print("Loading data...")
 corpus = load_jsonl(CORPUS_PATH)
 queries = load_jsonl(QUERY_PATH)
 qrels = load_qrels(QRELS_PATH)
 print(f"Loaded {len(corpus)} docs, {len(queries)} queries")
+
 
 # build inverted index: term -> {doc_id: tf}
 def build_inverted_index(corpus):
@@ -74,13 +80,17 @@ def build_inverted_index(corpus):
 
     return inverted_index, doc_lengths, doc_tokens
 
+
 print("Building inverted index...")
 inverted_index, doc_lengths, doc_tokens = build_inverted_index(corpus)
 avg_doc_length = np.mean(list(doc_lengths.values()))
 
+
 # PRF Retriever (BM25 + query expansion)
 class PRFRetriever:
-    def __init__(self, inverted_index, doc_lengths, doc_tokens, avg_doc_length, num_docs):
+    def __init__(
+        self, inverted_index, doc_lengths, doc_tokens, avg_doc_length, num_docs
+    ):
         self.inverted_index = inverted_index
         self.doc_lengths = doc_lengths
         self.doc_tokens = doc_tokens
@@ -119,7 +129,9 @@ class PRFRetriever:
             for t in tokens:
                 term_scores[t] += self.idf.get(t, 0)
 
-        top_terms = sorted(term_scores.items(), key=lambda x: x[1], reverse=True)[:num_terms]
+        top_terms = sorted(term_scores.items(), key=lambda x: x[1], reverse=True)[
+            :num_terms
+        ]
         return [t for t, _ in top_terms]
 
     # retrieve: BM25 + PRF
@@ -143,17 +155,21 @@ class PRFRetriever:
 
         return final_ranked[:top_k]
 
+
 # ===== METRICS =====
+
 
 def recall_at_k(results, relevant_docs, k):
     retrieved = [d for d, _ in results[:k]]
     hit = sum([1 for d in retrieved if d in relevant_docs])
     return hit / len(relevant_docs) if relevant_docs else 0
 
+
 def precision_at_k(results, relevant_docs, k):
     retrieved = [d for d, _ in results[:k]]
     hit = sum([1 for d in retrieved if d in relevant_docs])
     return hit / k if k > 0 else 0
+
 
 def average_precision_at_k(results, relevant_docs, k):
     retrieved = [d for d, _ in results[:k]]
@@ -170,17 +186,24 @@ def average_precision_at_k(results, relevant_docs, k):
 
     return score / min(len(relevant_docs), k)
 
+
 def dcg_at_k(results, relevant_docs, k):
     retrieved = [d for d, _ in results[:k]]
-    return sum([1 / math.log2(i + 2) for i, d in enumerate(retrieved) if d in relevant_docs])
+    return sum(
+        [1 / math.log2(i + 2) for i, d in enumerate(retrieved) if d in relevant_docs]
+    )
+
 
 def ndcg_at_k(results, relevant_docs, k):
     dcg = dcg_at_k(results, relevant_docs, k)
     ideal = sum([1 / math.log2(i + 2) for i in range(min(len(relevant_docs), k))])
     return dcg / ideal if ideal > 0 else 0
 
+
 print("Initializing retriever...")
-retriever = PRFRetriever(inverted_index, doc_lengths, doc_tokens, avg_doc_length, len(corpus))
+retriever = PRFRetriever(
+    inverted_index, doc_lengths, doc_tokens, avg_doc_length, len(corpus)
+)
 
 # lưu metric
 metrics = {
