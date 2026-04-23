@@ -283,54 +283,82 @@ def main():
                 st.write((text or "")[:800])
                 st.markdown("---")
 
-    else:  # Hà
+    else:  # Hà — BM25+ (ScienceIRSystem)
         st.header("Hà — BM25+ (ScienceIRSystem)")
-        data_path = st.text_input("Data path for Hà code", value="data/scifact")
-        ha_cls = load_science_ir_system(Path("Hà"))
+        
+        data_path_input = st.text_input("Local Data path (fallback)", value="data/scifact")
+        current_dir = Path(__file__).parent
+        ha_folder = current_dir / "Hà"
+        ha_cls = load_science_ir_system(ha_folder)
+        
         if ha_cls is None:
-            st.error("Could not load Hà/code.py (ScienceIRSystem)")
+            st.error(f"Không tìm thấy code.py tại {ha_folder}")
             return
 
         if "ha_system" not in st.session_state:
-            st.session_state.ha_system = ha_cls(data_path)
-
+            st.session_state.ha_system = ha_cls(data_path_input)
+        
         ha = st.session_state.ha_system
-        if st.button("Load data (Hà)"):
-            try:
-                ha.data_path = data_path
-                ha.load_data()
-                st.success(f"Loaded {len(ha.corpus)} docs")
-            except Exception as e:
-                st.error(f"Load failed: {e}")
 
-        if st.button("Build index (Hà)"):
+        # Nút nạp dữ liệu thủ công
+        if st.button("🔄 Load & Index Data"):
             try:
-                ha.build_index()
-                st.success("Index built")
-            except Exception as e:
-                st.error(f"Index build failed: {e}")
-
-        q = st.text_area("Query text for Hà")
-        k = st.number_input("Top-k (Hà)", min_value=1, max_value=500, value=20)
-        if st.button("Search (Hà)"):
-            try:
-                if ha.bm25 is None:
+                with st.spinner("Đang nạp dữ liệu..."):
+                    if uploaded is not None:
+                        content = uploaded.getvalue()
+                        docs_raw = parse_jsonl_bytes(content)
+                        ha.corpus = {}
+                        for doc in docs_raw:
+                            did = str(doc.get("_id") or doc.get("id"))
+                            ha.corpus[did] = (doc.get("title", "") + " ") * 2 + doc.get("text", "")
+                        st.success(f"✅ Đã nạp {len(ha.corpus)} tài liệu từ file Upload!")
+                    else:
+                        ha.load_data()
+                        st.info("📁 Đã nạp dữ liệu từ thư mục local.")
+                    
                     ha.build_index()
+                    st.session_state.ha_system = ha # Lưu trạng thái đã index
+                    st.success("🚀 Index đã sẵn sàng!")
+            except Exception as e:
+                st.error(f"Lỗi: {e}")
+
+        st.divider()
+        q = st.text_area("Nhập truy vấn:")
+        k = st.number_input("Top-K results", min_value=1, value=10)
+        
+        if st.button("🔍 Search (Hà)"):
+            # --- LOGIC TỰ ĐỘNG FIX LỖI "DỮ LIỆU TRỐNG" ---
+            if ha.bm25 is None:
+                if uploaded is not None:
+                    with st.spinner("Phát hiện file upload, đang tự động Index..."):
+                        content = uploaded.getvalue()
+                        docs_raw = parse_jsonl_bytes(content)
+                        ha.corpus = {str(d.get("_id")): (d.get("title", "") + " ") * 2 + d.get("text", "") for d in docs_raw}
+                        ha.build_index()
+                        st.session_state.ha_system = ha
+                elif os.path.exists(data_path_input):
+                    with st.spinner("Tự động nạp dữ liệu từ local path..."):
+                        ha.load_data()
+                        ha.build_index()
+                        st.session_state.ha_system = ha
+                else:
+                    st.warning("⚠️ Dữ liệu trống! Vui lòng upload file hoặc kiểm tra đường dẫn local rồi nhấn 'Load & Index Data'.")
+                    return
+
+            # Thực hiện search sau khi đã đảm bảo có Index
+            try:
                 results = ha.retrieve(q, top_k=int(k))
                 if not results:
-                    st.info("No results")
+                    st.info("Không có kết quả.")
                 else:
                     for i, (doc_id, score) in enumerate(results.items(), start=1):
-                        doc_text = ha.corpus.get(doc_id, "")
-                        snippet = doc_text[:600] + (
-                            "..." if len(doc_text) > 600 else ""
-                        )
-                        st.markdown(f"**{i}. {doc_id}** — score: {score:.4f}")
-                        st.write(snippet)
-                        st.markdown("---")
+                        with st.container():
+                            st.markdown(f"**{i}. Tài liệu {doc_id}** (Score: {score:.4f})")
+                            text = ha.corpus.get(doc_id, "")
+                            st.write(text[:800] + "...")
+                            st.markdown("---")
             except Exception as e:
-                st.error(f"Search failed: {e}")
-
+                st.error(f"Lỗi truy vấn: {e}")
 
 if __name__ == "__main__":
     main()
