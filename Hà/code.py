@@ -111,7 +111,7 @@ class ScienceIRSystem:
         return {self.doc_ids[i]: float(scores[i]) for i in top_idx}
 
     def run_evaluation(self, k_values=[1, 5, 10, 100]):
-        print(f"⏳ Đang đánh giá trên {len(self.qrels_test)} queries...")
+        print(f"Đang đánh giá trên {len(self.qrels_test)} queries...")
         
         # Lưu trữ kết quả theo từng mốc K
         metrics_results = {k: {"ndcg": [], "recall": [], "map": [], "p": []} for k in k_values}
