@@ -10,10 +10,8 @@ from nltk.stem import PorterStemmer
 from rank_bm25 import BM25Plus
 from typing import Dict, List, Sequence
 
-# Tải dữ liệu ngôn ngữ cần thiết
 nltk.download('stopwords', quiet=True)
 
-# --- CÁC HÀM ĐÁNH GIÁ THUẦN (MANUAL METRICS) ---
 def precision_at_k(ranked: Sequence[str], relevant: Dict[str, int], k: int) -> float:
     if k <= 0: return 0.0
     hits = sum(1 for doc_id in ranked[:k] if relevant.get(doc_id, 0) > 0)
@@ -50,7 +48,6 @@ def ndcg_at_k(ranked: Sequence[str], relevant: Dict[str, int], k: int) -> float:
     if idcg <= 0: return 0.0
     return dcg_at_k(ranked, relevant, k) / idcg
 
-# --- CLASS HỆ THỐNG TRUY VẤN ---
 class ScienceIRSystem:
     def __init__(self, data_path="data/scifact"):
         self.data_path = data_path
@@ -102,18 +99,16 @@ class ScienceIRSystem:
     def retrieve(self, query_text, top_k=100):
         query_tokens = self.tokenize_advanced(query_text)
         if not query_tokens:
-            return {} # Trả về dict rỗng để không lỗi .items()
+            return {} 
             
         scores = self.bm25.get_scores(query_tokens)
         top_idx = scores.argsort()[::-1][:top_k]
         
-        # Trả về Dictionary để UI dùng được .items()
         return {self.doc_ids[i]: float(scores[i]) for i in top_idx}
 
     def run_evaluation(self, k_values=[1, 5, 10, 100]):
         print(f"Đang đánh giá trên {len(self.qrels_test)} queries...")
         
-        # Lưu trữ kết quả theo từng mốc K
         metrics_results = {k: {"ndcg": [], "recall": [], "map": [], "p": []} for k in k_values}
 
         for q_id, relevant_docs in self.qrels_test.items():
