@@ -68,7 +68,7 @@ class ScienceIRSystem:
         return tokens
 
     def load_data(self):
-        print(f"📂 Đang tải dữ liệu từ: {os.path.abspath(self.data_path)}")
+        print(f"Đang tải dữ liệu từ: {os.path.abspath(self.data_path)}")
         # Load Corpus
         with open(os.path.join(self.data_path, "corpus.jsonl"), "r", encoding="utf-8") as f:
             for line in f:
@@ -90,14 +90,14 @@ class ScienceIRSystem:
                     q_id, d_id, score = str(row[0]), str(row[1]), int(row[2])
                     if q_id not in self.qrels_test: self.qrels_test[q_id] = {}
                     self.qrels_test[q_id][d_id] = score
-        print(f"✅ Đã load {len(self.corpus)} tài liệu và {len(self.qrels_test)} test queries.")
+        print(f"Đã load {len(self.corpus)} tài liệu và {len(self.qrels_test)} test queries.")
 
     def build_index(self):
         self.doc_ids = list(self.corpus.keys())
         print("⏳ Đang xây dựng Index BM25+...")
         tokenized_corpus = [self.tokenize_advanced(self.corpus[did]) for did in self.doc_ids]
         self.bm25 = BM25Plus(tokenized_corpus, k1=1.2, b=0.5)
-        print("✅ Indexing hoàn tất!")
+        print("Indexing hoàn tất!")
 
     def retrieve(self, query_text, top_k=100):
         query_tokens = self.tokenize_advanced(query_text)
